@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1>NBA Games</h1>
+    <label for="startD">Start Date:</label>
+    <input type="date" id="startD">
+    <label for="endD">End Date:</label>
+    <input type="date" id="endD">
+    <button onclick="OnGames()">Show Games</button>
+
+    <div class="gamesCon"></div>
+    <div id="pagination" class="pagination"></div>
+</body>
+</html>
+<script>
+
+const containerEl=document.getElementsByClassName("gamesCon")[0];
+let fetcheddata=[]
+     let palyerData=[]
+     let currentPage=1;
+     const playersPerPage=10;
+     let totalPlayers=0;
+    
+
+   function fetchdata(){
+    const startDate = document.getElementById('startD').value;
+    const endDate = document.getElementById('endD').value;
+    console.log(startDate)
+    console.log(endDate)
+    fetch(`https://www.balldontlie.io/api/v1/games`)
+    .then(res=>res.json())
+    .then(data=>{
+        palyerData=data.data;
+        fetcheddata=[...palyerData];
+        totalPlayers=data.data.length;
+        console.log(data.data)
+        //appendData()
+    })
+    .catch(error=>{
+        console.log(error)
+    })
+   }
+
+   fetchdata()
+   function appendData(){
+        const startIndex=(currentPage-1) * playersPerPage;
+        const endIndex=startIndex+playersPerPage 
+        const playersToShow=fetcheddata.slice(startIndex,endIndex)
+        //console.log(playersToShow)
+        if(playersToShow.length==0){
+            containerEl.innerHTML=`<p>No Games Found.</p>`
+        }
+        containerEl.innerHTML=playersToShow.map(player=>generateCard(player)).join(" ");
+     }
+
+     function generateCard(player){
+        return `
+        <div class="card">
+            <img src="data:image/jpeg;base64,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" alt="Player">
+            <h1 class="name">Date: ${player.date} ${player.last_name}</h1>
+            <h3 class="position">Season: ${player.home_team.season}</h3>
+            <p>Status: ${player.home_team.status}</p>
+            <p>Home team score: ${player.home_team.home_team_score}</p>
+            <p>Division: ${player.visitor_team.division}</p>
+            </div>
+        `;
+     }
+     
+     function renderPagination() {
+            const totalPages = Math.ceil(totalPlayers / playersPerPage);
+            let paginationHTML = '';
+
+            for (let page = 1; page <= totalPages; page++) {
+                paginationHTML += `<button class="pagination-btn" data-page="${page}">${page}</button>`;
+            }
+
+            pagination.innerHTML = paginationHTML;
+
+
+            const paginationBtns = document.getElementsByClassName("pagination-btn");
+            Array.from(paginationBtns).forEach(button => {
+                button.addEventListener("click", function () {
+                    const pageNumber = parseInt(this.getAttribute("data-page"));
+                    goToPage(pageNumber);
+                });
+            });
+        }
+
+       function goToPage(pageNumber) {
+            if (pageNumber < 1 || pageNumber > Math.ceil(totalPlayers / playersPerPage)) {
+                return;
+            }
+
+            currentPage = pageNumber;
+            appendData();
+        }
+</script>
